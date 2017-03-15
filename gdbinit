@@ -83,7 +83,7 @@ set $SHOWCPUREGISTERS = 1
 # set to 1 to enable display of stack (default is 0)
 set $SHOWSTACK = 1
 # set to 1 to enable display of data window (default is 0)
-set $SHOWDATAWIN = 0
+set $SHOWDATAWIN = 1
 # set to 0 to disable colored display of changed registers
 set $SHOWREGCHANGES = 1
 # set to 1 so skip command to execute the instruction at the new location
@@ -123,7 +123,7 @@ set $CONTEXTSIZE_CODE  = 8
 
 # __________________end gdb options_________________
 #
-
+set $data_addr = 0
 # __________________color functions_________________
 #
 # color codes
@@ -1527,6 +1527,7 @@ define ddump
             set $_count++
         end
     end
+    #set $data_addr = 0
 end
 document ddump
 Syntax: ddump NUM
@@ -1547,54 +1548,69 @@ Syntax: dd ADDR
 | Display 16 lines of a hex dump of address starting at ADDR.
 end
 
+define ddd
+    if $argc != 1
+        help dd
+    else
+        set $data_addr = $arg0
+        refresh
+    end
+end
+document dd
+Syntax: dd ADDR
+| set $data_addr and refresh.
+end
+
 
 define datawin
-    if $ARM == 1
-        if ((($r0 >> 0x18) == 0x40) || (($r0 >> 0x18) == 0x08) || (($r0 >> 0x18) == 0xBF))
-            set $data_addr = $r0
-        else
-            if ((($r1 >> 0x18) == 0x40) || (($r1 >> 0x18) == 0x08) || (($r1 >> 0x18) == 0xBF))
-                set $data_addr = $r1
-            else
-                if ((($r2 >> 0x18) == 0x40) || (($r2 >> 0x18) == 0x08) || (($r2 >> 0x18) == 0xBF))
-                    set $data_addr = $r2
-                else
-                    set $data_addr = $sp
-                end
-            end
-        end
-################################# X86
-    else
-        if ($64BITS == 1)
-            if ((($rsi >> 0x18) == 0x40) || (($rsi >> 0x18) == 0x08) || (($rsi >> 0x18) == 0xBF))
-                set $data_addr = $rsi
-            else
-                if ((($rdi >> 0x18) == 0x40) || (($rdi >> 0x18) == 0x08) || (($rdi >> 0x18) == 0xBF))
-                    set $data_addr = $rdi
-                else
-                    if ((($rax >> 0x18) == 0x40) || (($rax >> 0x18) == 0x08) || (($rax >> 0x18) == 0xBF))
-                        set $data_addr = $rax
-                    else
-                        set $data_addr = $rsp
-                    end
-                end
-            end
-        else
-            if ((($esi >> 0x18) == 0x40) || (($esi >> 0x18) == 0x08) || (($esi >> 0x18) == 0xBF))
-                set $data_addr = $esi
-            else
-                if ((($edi >> 0x18) == 0x40) || (($edi >> 0x18) == 0x08) || (($edi >> 0x18) == 0xBF))
-                    set $data_addr = $edi
-                else
-                    if ((($eax >> 0x18) == 0x40) || (($eax >> 0x18) == 0x08) || (($eax >> 0x18) == 0xBF))
-                        set $data_addr = $eax
-                    else
-                        set $data_addr = $esp
-                    end
-                end
-            end
-        end
-    end
+	if $data_addr == 0
+	    if $ARM == 1
+		if ((($r0 >> 0x18) == 0x40) || (($r0 >> 0x18) == 0x08) || (($r0 >> 0x18) == 0xBF))
+		    set $data_addr = $r0
+		else
+		    if ((($r1 >> 0x18) == 0x40) || (($r1 >> 0x18) == 0x08) || (($r1 >> 0x18) == 0xBF))
+		        set $data_addr = $r1
+		    else
+		        if ((($r2 >> 0x18) == 0x40) || (($r2 >> 0x18) == 0x08) || (($r2 >> 0x18) == 0xBF))
+		            set $data_addr = $r2
+		        else
+		            set $data_addr = $sp
+		        end
+		    end
+		end
+	################################# X86
+	    else
+		if ($64BITS == 1)
+		    if ((($rsi >> 0x18) == 0x40) || (($rsi >> 0x18) == 0x08) || (($rsi >> 0x18) == 0xBF))
+		        set $data_addr = $rsi
+		    else
+		        if ((($rdi >> 0x18) == 0x40) || (($rdi >> 0x18) == 0x08) || (($rdi >> 0x18) == 0xBF))
+		            set $data_addr = $rdi
+		        else
+		            if ((($rax >> 0x18) == 0x40) || (($rax >> 0x18) == 0x08) || (($rax >> 0x18) == 0xBF))
+		                set $data_addr = $rax
+		            else
+		                set $data_addr = $rsp
+		            end
+		        end
+		    end
+		else
+		    if ((($esi >> 0x18) == 0x40) || (($esi >> 0x18) == 0x08) || (($esi >> 0x18) == 0xBF))
+		        set $data_addr = $esi
+		    else
+		        if ((($edi >> 0x18) == 0x40) || (($edi >> 0x18) == 0x08) || (($edi >> 0x18) == 0xBF))
+		            set $data_addr = $edi
+		        else
+		            if ((($eax >> 0x18) == 0x40) || (($eax >> 0x18) == 0x08) || (($eax >> 0x18) == 0xBF))
+		                set $data_addr = $eax
+		            else
+		                set $data_addr = $esp
+		            end
+		        end
+		    end
+		end
+	    end
+	end
     ddump $CONTEXTSIZE_DATA
 end
 document datawin
@@ -3155,7 +3171,7 @@ end
 
 
 # ____________________misc____________________
-define hook-stop
+define refresh
     if (sizeof(void*) == 8)
         set $64BITS = 1
     else
@@ -3173,7 +3189,7 @@ define hook-stop
     # Display instructions formats
     if $ARM == 1
         if $ARMOPCODES == 1
-           # set arm show-opcode-bytes 1
+            set arm show-opcode-bytes 1
         end
     else
         if $X86FLAVOR == 0
@@ -3185,6 +3201,7 @@ define hook-stop
 
     # this makes 'context' be called at every BP/step
     if ($SHOW_CONTEXT > 0)
+	cls
         context
     end
     if ($SHOW_NEST_INSN > 0)
@@ -3194,6 +3211,14 @@ define hook-stop
             set $x = $x - 1
         end
     end
+end
+document refresh
+Syntax: refresh
+| refresh context
+end
+
+define hook-stop
+    refresh
 end
 document hook-stop
 Syntax: hook-stop
