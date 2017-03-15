@@ -68,7 +68,8 @@
 #
 
 # __________________gdb options_________________
-
+#set to 1 to cls screen on each refresh,use clson/clsoff to on or off.
+set $AUTOCLS = 0
 # set to 1 to have ARM target debugging as default, use the "arm" command to switch inside gdb
 set $ARM = 0
 # set to 0 if you have problems with the colorized prompt - reported by Plouj with Ubuntu gdb 7.2
@@ -93,7 +94,7 @@ set $SKIPEXECUTE = 0
 # 1 = use stepo (do not get into calls), 0 = use stepi (step into calls)
 set $SKIPSTEP = 1
 # show the ARM opcodes - change to 0 if you don't want such thing (in x/i command)
-set $ARMOPCODES = 1
+set $ARMOPCODES = 0
 # x86 disassembly flavor: 0 for Intel, 1 for AT&T
 set $X86FLAVOR = 0
 # use colorized output or not
@@ -3201,7 +3202,9 @@ define refresh
 
     # this makes 'context' be called at every BP/step
     if ($SHOW_CONTEXT > 0)
-	cls
+		if $AUTOCLS ==1
+			cls
+		end
         context
     end
     if ($SHOW_NEST_INSN > 0)
@@ -3860,10 +3863,22 @@ define ps
 		set $len=8
 	end
 	set $i=0
+	if $ARM == 1
+		set $tsp=$sp
+    else
+		set $tsp=$esp
+    end
 	while($i<$len)
-		x /a $esp+$i*4
+		x /a $tsp+$i*4
 		set $i=$i+1
 	end
+end
+
+define clson
+	set $AUTOCLS=1
+end
+define clsoff
+	set $AUTOCLS=0
 end
 
 #EOF
