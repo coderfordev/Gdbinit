@@ -2058,32 +2058,27 @@ define context
 	    color $CYAN
     end
     if $SHOWSTACK == 1
-    	color $COLOR_SEPARATOR
-		if $ARM == 1
-       printf "[0x%08X]", $sp
-		else
-        if ($64BITS == 1)
-		        printf "[0x%04X:0x%016lX]", $ss, $rsp
-        else
-            printf "[0x%04X:0x%08X]", $ss, $esp
-        end
-    end
-        color $COLOR_SEPARATOR
-		printf "-------------------------"
-    	printf "-----------------------------"
-	    if ($64BITS == 1)
-	        printf "-------------------------------------"
-	    end
-	    color $COLOR_SEPARATOR
-	    color_bold
-	    printf "[stack]\n"
-    	color_reset
-    	set $context_i = $CONTEXTSIZE_STACK
-    	while ($context_i > 0)
-       	    set $context_t = $sp + 0x10 * ($context_i - 1)
-       	    hexdump $context_t
-       	    set $context_i--
-    	end
+			color $COLOR_SEPARATOR
+			if $ARM == 1
+				printf "[0x%08X]", $sp
+			else
+				if ($64BITS == 1)
+						printf "[0x%04X:0x%016lX]", $ss, $rsp
+				else
+					printf "[0x%04X:0x%08X]", $ss, $esp
+				end
+			end
+			color $COLOR_SEPARATOR
+			printf "-------------------------"
+			printf "-----------------------------"
+			if ($64BITS == 1)
+				printf "-------------------------------------"
+			end
+			color $COLOR_SEPARATOR
+			color_bold
+			printf "[stack]\n"
+			color_reset
+			ps $CONTEXTSIZE_STACK
     end
     # show the objective C message being passed to msgSend
     if $SHOWOBJECTIVEC == 1
