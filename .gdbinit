@@ -3869,6 +3869,22 @@ define ps
 	end
 end
 
+define psl
+	if $argc==1
+		set $len=$arg0
+	else
+		set $len=8
+	end
+	set logging file ~/.psl
+	shell rm ~/.psl
+	set logging redirect on
+	set logging on
+	ps $len
+	set loggin off
+	set logging redirect off
+	shell cat ~/.psl |grep "<"
+end	
+
 define clson
 	set $AUTOCLS=1
 end
